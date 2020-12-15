@@ -90,6 +90,10 @@ function App() {
     }
   }
 
+  const openImage = () => {
+    console.log('open')
+  }
+
   const searchInfinite = () => {
     page = page + 1
     console.log(page, 'p')
@@ -115,7 +119,7 @@ function App() {
       >
         <WrapperImages>
           {images.map(image => (
-            <UnsplashImage url={image.urls.thumb} key={image.id} />
+            <UnsplashImage url={image.urls.thumb} key={image.id} id={image.id} regular={image.urls.regular} descripition={image.alt_description} />
           ))}
         </WrapperImages>
       </InfiniteScroll>
