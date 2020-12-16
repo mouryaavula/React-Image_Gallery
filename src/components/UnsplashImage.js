@@ -1,8 +1,9 @@
 import styled from 'styled-components'
-import React, { useState } from 'react';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import Button from '@atlaskit/button';
+import React from 'react';
 import axios from 'axios';
+import {
+    Link
+} from "react-router-dom";
 
 const customStyles = {
     content: {
@@ -44,61 +45,9 @@ const ButtonItem = styled.div`
 `;
 
 export const UnsplashImage = ({url, key, id, regular, descripition }) => {
-    const [modal, setModal] = useState(false)
-    const openImage = () => {
-        setModal(true)
-    }
-    const closeModal = () => {
-        setModal(false)
-    }
-    const downloadImage = () => {
-        const method = 'GET';
-        const url = `${regular}`;
-        axios
-            .request({
-                url,
-                method,
-                responseType: 'blob', //important
-            })
-            .then(({ data }) => {
-                const downloadUrl = window.URL.createObjectURL(new Blob([data]));
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.setAttribute('download', 'file.png'); //any other extension
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-            });
-    }
     return (
         <>
-            <Img src={url} key={key} alt="" onClick={openImage} style={{ cursor: 'pointer' }} />
-            {
-                modal ? (
-                    <ModalTransition>
-                        <Modal size="medium" >
-                          <Grid>
-                              <GridItem>
-                                  <Button onClick={closeModal}>Back</Button>
-                              </GridItem>
-                          </Grid>
-                          <Grid>
-                            <ImageItem>
-                                <Img src={regular} />
-                            </ImageItem>
-                            <div style={{ textAlign: 'center' }}>
-                                <span>{descripition}</span>
-                            </div>
-                          </Grid>
-                          <Grid>
-                            <ButtonItem>
-                                <Button appearance="primary" onClick={downloadImage}>Download</Button>
-                            </ButtonItem>
-                          </Grid>
-                        </Modal>
-                    </ModalTransition>
-                ) : null
-            }
+            <Link to={`/${id}`} ><Img src={url} key={key} alt="" style={{ cursor: 'pointer' }} /></Link>
         </>
     )
 }

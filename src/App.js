@@ -1,13 +1,21 @@
 import logo from './logo.svg';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './App.css';
 import { Heading } from './components/Heading';
 import { Loader } from './components/Loader';
 import { UnsplashImage } from './components/UnsplashImage';
+import { ImageComponent } from './components/ImageComponent';
 import styled from 'styled-components'
 import { createGlobalStyle } from 'styled-components'
 import axios from 'axios';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { render } from '@testing-library/react';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -55,76 +63,95 @@ const Button = styled.button`
 
 let page = 1
 
-function App() {
-  const [images, setImages] = useState([]);
-  const [query, setQuery] = useState('');
-  useEffect(() => {
-    console.log('true-po')
-    fetchImages();
-  }, [])
-
-  const fetchImages = () => {
-    console.log('true')
-    const apiRoot = 'https://api.unsplash.com';
-    axios.get(`${apiRoot}/photos/random?client_id=SS2xJ03UZU_mGL8tRvd8U4enJ74cOGRSReU4RNhAiuc&count=10`)
-      .then((response) => {
-        console.log(response.data, 'pop')
-        setImages([...images, ...response.data]);
-      })
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+  
+    this.state = {
+       images: [],
+       query: ''
+    }
+  }
+  
+  componentDidMount() {
+    this.fetchImages()
   }
 
-  const handleSearch = (event) => {
-    if (event?.target.value !== '') {
-      setQuery(event?.target.value)
-      var url = new URL(window.location.origin + window.location.pathname);
-      url.searchParams.append("search", event?.target.value);
-      window.history.pushState(null, null, url);
+  fetchImages = () => {
+    if (this.state.query === '') {
       const apiRoot = 'https://api.unsplash.com';
-      axios.get(`${apiRoot}/search/photos?client_id=SS2xJ03UZU_mGL8tRvd8U4enJ74cOGRSReU4RNhAiuc&query=${event?.target.value}`)
+      axios.get(`${apiRoot}/photos/random?client_id=DtUhr98dV5Mo_RF1TRHU26mRd9ofcDRzU3sKhAuzRAA&count=10`)
         .then((response) => {
-          setImages([...response.data.results])
+          this.setState({
+            images: [...this.state.images, ...response.data]
+          })
         })
     } else {
-      setQuery(event?.target.value)
-      fetchImages()
+      const apiRoot = 'https://api.unsplash.com';
+      page = page + 1
+      axios.get(`${apiRoot}/search/photos?client_id=DtUhr98dV5Mo_RF1TRHU26mRd9ofcDRzU3sKhAuzRAA&page=${page}&query=${this.state.query}`)
+      .then((response) => {
+        this.setState({
+          images: [...this.state.images, ...response.data.results]
+        })
+      })
     }
   }
 
-  const openImage = () => {
-    console.log('open')
+  handleSearch = (event) => {
+    this.setState({
+      query: event.target.value
+    }, () => {
+      var url = new URL(window.location.origin + window.location.pathname);
+      url.searchParams.append("search", event?.target.value);
+      window.history.pushState(null, null, url);
+    })
   }
 
-  const searchInfinite = () => {
-    page = page + 1
-    console.log(page, 'p')
+  searchImages = (event) => {
+    event.preventDefault()
     const apiRoot = 'https://api.unsplash.com';
-    axios.get(`${apiRoot}/search/photos?client_id=SS2xJ03UZU_mGL8tRvd8U4enJ74cOGRSReU4RNhAiuc&page=${page}&query=${query}`)
+    axios.get(`${apiRoot}/search/photos?client_id=DtUhr98dV5Mo_RF1TRHU26mRd9ofcDRzU3sKhAuzRAA&query=${this.state.query}`)
       .then((response) => {
-        setImages([...images, ...response.data.results])
+        this.setState({
+          images: [...response.data.results]
+        })
       })
   }
 
-  return (
-    <div className="App">
-      <Heading />
-      <form>
-          <Input type="text" placeholder="Search photos" onChange={handleSearch}/>
-      </form>
-      <GlobalStyle />
-      <InfiniteScroll
-        dataLength={images.length}
-        next={query === '' ? fetchImages : searchInfinite}
-        hasMore={true}
-        loader={<Loader />}
-      >
-        <WrapperImages>
-          {images.map(image => (
-            <UnsplashImage url={image.urls.thumb} key={image.id} id={image.id} regular={image.urls.regular} descripition={image.alt_description} />
-          ))}
-        </WrapperImages>
-      </InfiniteScroll>
-    </div>
-  );
+  render() {
+    return (
+      <Router>
+        <div className="App">
+          <Switch>
+            <Route exact path="/">
+              <Heading />
+              <form>
+                  <Input type="text" placeholder="Search photos" onChange={this.handleSearch}/>
+                  <Button onClick={this.searchImages}>Search</Button>
+              </form>
+              <GlobalStyle />
+              <InfiniteScroll
+                dataLength={this.state.images.length}
+                next={this.fetchImages}
+                hasMore={true}
+                loader={<Loader />}
+              >
+                <WrapperImages>
+                  {this.state.images.map(image => (
+                    <UnsplashImage url={image.urls.thumb} key={image.id} id={image.id} regular={image.urls.regular} descripition={image.alt_description} />
+                  ))}
+                </WrapperImages>
+              </InfiniteScroll>
+            </Route>
+            <Route exact path="/:id">
+              <ImageComponent />
+            </Route>
+          </Switch>
+        </div>
+      </Router>
+    );
+  }
 }
 
 export default App;
