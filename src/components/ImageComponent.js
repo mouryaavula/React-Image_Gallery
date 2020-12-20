@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import axios from 'axios';
 import styled from 'styled-components'
 import Button from '@atlaskit/button';
+import ShareButton from 'react-web-share-button';
 import {
     Link
 } from "react-router-dom";
@@ -90,9 +91,12 @@ export class ImageComponent extends Component {
                 </div>
                 </Grid>
                 <Grid>
-                <ButtonItem>
-                    <Button appearance="primary" onClick={this.downloadImage}>Download</Button>
-                </ButtonItem>
+                    <ButtonItem>
+                        <Button appearance="primary" onClick={this.downloadImage}>Download</Button>
+                    </ButtonItem>
+                    <ButtonItem>
+                        <ShareButton text={`${this.state.description}`} text={`${this.state.description}`} url={`${this.state.image}`} />
+                    </ButtonItem>
                 </Grid>
             </div>
         )
